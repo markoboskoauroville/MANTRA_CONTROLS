@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-let VERSION = "v4"
+let VERSION = "v5"
 
 @main
 struct MackieApp: App {
@@ -88,7 +88,7 @@ struct BlobBand: View {
 struct MackieTable: View {
     @ObservedObject var s: Server
     @ObservedObject var cat: Catalogue
-    static let w: [CGFloat] = [150, 70, 250, 130, 50, 34, 34, 130, 50, 30]   // the master's columns: Key Stroke copies them
+    static let w: [CGFloat] = [150, 70, 250, 130, 50, 34, 60, 130, 50, 30]   // the master's columns: Key Stroke copies them
     var body: some View {
         Band(title: "THE TABLE") {
             KeepBar(s: s)
@@ -143,7 +143,7 @@ struct MackieRow: View {
                 Tick(on: r.bool("invert"), dead: !r.bool("relative")) { s.verb(["a": "set", "id": id, "invert": !r.bool("invert")]) }
                     .frame(width: w[4]).help(r.bool("relative") ? "the knob turns the other way" : "this command has no direction to turn round")
                 Tick(on: r.bool("on")) { s.verb(["a": "set", "id": id, "on": !r.bool("on")]) }.frame(width: w[5])
-                LedTick(s: s, r: r).frame(width: w[6])
+                HStack(spacing: 6) { LedTick(s: s, r: r); LedSwatch(s: s, r: r) }.frame(width: w[6])
                 Pill(title: learnWords(learning, r.str("from")), look: learning ? .lit : .ghost, width: w[7]) { s.verb(["a": "learn", "id": id]) }
                 Pill(title: "TRY", look: .ghost, width: w[8]) { s.verb(["a": "try", "id": id]) }.help("send this command once, now")
                 SelectTick(s: s, r: r).frame(width: w[9])

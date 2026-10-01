@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-let VERSION = "v4"
+let VERSION = "v5"
 
 @main
 struct MidiKeysApp: App {
@@ -29,7 +29,7 @@ struct MidiKeysApp: App {
 struct TableBand: View {
     @ObservedObject var s: Server
     // the columns, the same widths in the head and in every row
-    static let w: [CGFloat] = [150, 70, 250, 170, 34, 34, 130, 30]   // FILTER, VALUE, LEARN and the tick as wide as the master's
+    static let w: [CGFloat] = [150, 70, 250, 170, 34, 60, 130, 30]   // FILTER, VALUE, LEARN and the tick as wide as the master's
     var body: some View {
         let st = s.state
         Band(title: "THE TABLE") {
@@ -88,7 +88,7 @@ struct RowView: View {
                     Pill(title: "VOLUME", look: r.str("kind") == "volume" ? .lit : .ghost) { s.verb(["a": "set", "id": id, "kind": "volume"]) }
                 }.frame(width: w[3], alignment: .leading)
                 Tick(on: r.bool("on")) { s.verb(["a": "set", "id": id, "on": !r.bool("on")]) }.frame(width: w[4])
-                LedTick(s: s, r: r).frame(width: w[5])
+                HStack(spacing: 6) { LedTick(s: s, r: r); LedSwatch(s: s, r: r) }.frame(width: w[5])
                 Pill(title: learnWords(learning, r.str("type")), look: learning ? .lit : .ghost, width: w[6]) {
                     s.verb(["a": "learn", "id": id])
                 }

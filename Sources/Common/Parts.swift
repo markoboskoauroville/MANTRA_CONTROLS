@@ -378,3 +378,43 @@ struct LedLine: View {
         }
     }
 }
+
+/// THE COLOUR SWATCH beside the LED tick: the knob's scene colour; a click opens the E16's own 10 x 10 palette,
+/// and a pick is written into the scene file (e16colour.py). He sends the scene to the E16 from the OXI App.
+struct LedSwatch: View {
+    @ObservedObject var s: Server
+    let r: JSON
+    @State private var open = false
+    var body: some View {
+        let a = r.obj("ledAbout")
+        let knob = a?.str("knob") ?? ""
+        let has = !knob.isEmpty && knob != "<null>"
+        let hex = UInt32((a?.str("colour") ?? "").replacingOccurrences(of: "#", with: ""), radix: 16)
+        Button { if has { open = true } } label: {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(has ? (hex.map { Color(hex: $0) } ?? Ink.slate) : Color.clear)
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.25), lineWidth: 1))
+                .frame(width: 16, height: 16).opacity(has ? 1 : 0.2)
+        }
+        .buttonStyle(.plain).disabled(!has)
+        .help(has ? "the colour of " + knob + ": click to change it in the scene" : (a?.str("says") ?? ""))
+        .popover(isPresented: $open) {
+            let pal = s.state.strings("ledPalette")
+            let cur = a?.int("index") ?? -1
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(22), spacing: 3), count: 10), spacing: 3) {
+                ForEach(Array(pal.enumerated()), id: \.offset) { i, c in
+                    Button {
+                        open = false
+                        s.verb(["a": "colour", "id": r.int("id"), "index": i])
+                    } label: {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color(hex: UInt32(c.replacingOccurrences(of: "#", with: ""), radix: 16) ?? 0))
+                            .frame(width: 22, height: 22)
+                            .overlay(RoundedRectangle(cornerRadius: 4).stroke(i == cur ? Ink.sand : Color.clear, lineWidth: 2))
+                    }.buttonStyle(.plain).help("colour \(i)")
+                }
+            }
+            .padding(10).background(Ink.surface)
+        }
+    }
+}
