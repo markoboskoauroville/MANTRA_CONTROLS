@@ -8,8 +8,8 @@ now, leave the experimental feature so it can be web or Swift, two ways to launc
 
 | App | Controls | Its server | v |
 |---|---|---|---|
-| MIDI to Key Stroke.app | MIDI_TO_KEYSTROKE (`midikeys.lua`) | 127.0.0.1:8853 | 1 |
-| MIDI to MK Control.app | MANTRA_MACKIE (`mackie.lua`) | 127.0.0.1:8855 | 1 |
+| MIDI to Key Stroke.app | MIDI_TO_KEYSTROKE (`midikeys.lua`) | 127.0.0.1:8853 | 3 |
+| MIDI to MK Control.app | MANTRA_MACKIE (`mackie.lua`) | 127.0.0.1:8855 | 3 |
 
 ## How it works
 

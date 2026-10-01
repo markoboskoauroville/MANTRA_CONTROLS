@@ -14,3 +14,6 @@
 6. **The line under the title is the incoming MIDI monitor** (v2, 1.10.2026): `MidiMonitor` in Parts.swift draws
    /state's `incoming`, always four lines high; the version sits beside the title. The ring and the words are in
    ~/.local/lib/mantra/midiwatch.lua, so the window and the page can never word a message differently.
+7. **v3, 1.10.2026: MIDI to MK Control is the master.** `KeepBar`, `SelectTick`, `SelectAll`, `FilterCell` and
+   `learnWords` in Parts.swift are the table's shared parts; Key Stroke copies MK's column widths. `ticked` in
+   /state is a list of numbers, not of objects: `list()` reads it as empty, count it as `[Any]`.

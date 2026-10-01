@@ -1,12 +1,12 @@
 // MackieApp.swift — MIDI to MK Control, as a Mac window instead of a web page.
 //
 // Every control here is a verb the page already sends to mackie.lua (MANTRA_MACKIE): power, detect,
-// unlock, out, back, add, delete, learn, try, set, blob, blobhome, blobhold, clear. The MK command list
+// unlock, out, back, add, tick, tickall, delete, undo, redo, learn, try, set, blob, blobhome, blobhold, clear. The MK command list
 // is the app's own /catalogue, so a command added to mcu.lua appears here without this file changing.
 
 import SwiftUI
 
-let VERSION = "v2"
+let VERSION = "v3"
 
 @main
 struct MackieApp: App {
@@ -88,14 +88,16 @@ struct BlobBand: View {
 struct MackieTable: View {
     @ObservedObject var s: Server
     @ObservedObject var cat: Catalogue
-    static let w: [CGFloat] = [150, 70, 250, 130, 50, 34, 130, 50, 30]
+    static let w: [CGFloat] = [150, 70, 250, 130, 50, 34, 130, 50, 30]   // the master's columns: Key Stroke copies them
     var body: some View {
         Band(title: "THE TABLE") {
+            KeepBar(s: s)
             HStack(spacing: 8) {
-                ForEach(Array(["FROM", "VALUE", "MK COMMAND", "HOW", "INVERT", "ON", "LEARN", "TRY", ""].enumerated()), id: \.offset) { i, h in
+                ForEach(Array(["FILTER", "VALUE", "MK COMMAND", "HOW", "INVERT", "ON", "LEARN", "TRY"].enumerated()), id: \.offset) { i, h in
                     Text(h).font(.system(size: 10, weight: .semibold, design: .monospaced))
                         .tracking(1).foregroundColor(Ink.dim).frame(width: MackieTable.w[i], alignment: .leading)
                 }
+                SelectAll(s: s).frame(width: MackieTable.w[8])
             }
             let rows = s.state.list("rows")
             if rows.isEmpty {
@@ -118,12 +120,10 @@ struct MackieRow: View {
         let w = MackieTable.w
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {
-                HStack(spacing: 4) {
-                    Choice(options: [("cc", "CC"), ("note", "NOTE")], chosen: r.str("from"), width: 72) {
-                        s.verb(["a": "set", "id": id, "from": $0])
-                    }
-                    Field(value: r.str("number"), width: 70, lit: learning) { s.verb(["a": "set", "id": id, "number": $0]) }
-                }.frame(width: w[0], alignment: .leading)
+                FilterCell(kind: r.str("from"), number: r.str("number"), lit: learning,
+                           pickKind: { s.verb(["a": "set", "id": id, "from": $0]) },
+                           setNumber: { s.verb(["a": "set", "id": id, "number": $0]) })
+                    .frame(width: w[0], alignment: .leading)
                 Field(value: r.str("valueText"), width: w[1], disabled: r.bool("sweep")) { s.verb(["a": "set", "id": id, "value": $0]) }
                 Menu {
                     ForEach(cat.groups, id: \.group) { g in
@@ -143,9 +143,9 @@ struct MackieRow: View {
                 Tick(on: r.bool("invert"), dead: !r.bool("relative")) { s.verb(["a": "set", "id": id, "invert": !r.bool("invert")]) }
                     .frame(width: w[4]).help(r.bool("relative") ? "the knob turns the other way" : "this command has no direction to turn round")
                 Tick(on: r.bool("on")) { s.verb(["a": "set", "id": id, "on": !r.bool("on")]) }.frame(width: w[5])
-                Pill(title: learning ? "turn it\u{2026}" : "LEARN", look: learning ? .lit : .ghost, width: w[6]) { s.verb(["a": "learn", "id": id]) }
+                Pill(title: learnWords(learning, r.str("from")), look: learning ? .lit : .ghost, width: w[6]) { s.verb(["a": "learn", "id": id]) }
                 Pill(title: "TRY", look: .ghost, width: w[7]) { s.verb(["a": "try", "id": id]) }.help("send this command once, now")
-                Pill(title: "\u{2717}", look: .ghost, width: w[8]) { s.verb(["a": "delete", "id": id]) }.help("remove this row")
+                SelectTick(s: s, r: r).frame(width: w[8])
             }
             if r.bool("clash") {
                 Text("another row answers the same message \u{2014} both are sent").font(Ink.mono).foregroundColor(Ink.red)

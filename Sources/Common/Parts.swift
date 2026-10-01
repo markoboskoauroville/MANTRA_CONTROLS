@@ -67,12 +67,13 @@ struct Pill: View {
 struct Tick: View {
     let on: Bool
     var dead = false
+    var tint: Color = Ink.amber
     let action: () -> Void
     var body: some View {
         Button(action: action) {
             RoundedRectangle(cornerRadius: 5)
-                .fill(on ? Ink.amber : Color.clear)
-                .overlay(RoundedRectangle(cornerRadius: 5).stroke(on ? Ink.amber : Ink.slateHi, lineWidth: 1.5))
+                .fill(on ? tint : Color.clear)
+                .overlay(RoundedRectangle(cornerRadius: 5).stroke(on ? tint : Ink.slateHi, lineWidth: 1.5))
                 .overlay(Text(on ? "\u{2713}" : "").font(.system(size: 12, weight: .bold)).foregroundColor(.black))
                 .frame(width: 22, height: 22).opacity(dead ? 0.25 : 1)
         }.buttonStyle(.plain).disabled(dead)
@@ -275,4 +276,79 @@ struct Controls<Content: View>: View {
         .preferredColorScheme(.dark)
         .onAppear { s.begin() }
     }
+}
+
+// ---------------------------------------------------------------- the table's own parts, the same in both apps
+// Marko, 1.10.2026: "the last column when there are x's should be select buttons, and then there should be
+// action buttons to delete and undo and redo ... both apps should be the same ... MIDI to MKControl is the
+// master." The history and the ticks live in ~/.local/lib/mantra/tablekeep.lua and arrive as /state's `keep`;
+// the web pages draw the same bar from the same state.
+
+/// UNDO, REDO, what the last change was, and DELETE for the ticked rows. Always there, dimmed when idle.
+struct KeepBar: View {
+    @ObservedObject var s: Server
+    var body: some View {
+        let k = s.state.obj("keep")
+        let n = (k?["ticked"] as? [Any])?.count ?? 0
+        let canUndo = k?.bool("canUndo") ?? false, canRedo = k?.bool("canRedo") ?? false
+        HStack(spacing: 10) {
+            Pill(title: "UNDO", look: .plain) { s.verb(["a": "undo"]) }
+                .opacity(canUndo ? 1 : 0.4).disabled(!canUndo)
+                .keyboardShortcut("z", modifiers: .command)
+                .help(canUndo ? "undo: " + (k?.str("undoWhat") ?? "") + "   (\u{2318}Z)" : "nothing to undo")
+            Pill(title: "REDO", look: .plain) { s.verb(["a": "redo"]) }
+                .opacity(canRedo ? 1 : 0.4).disabled(!canRedo)
+                .keyboardShortcut("z", modifiers: [.command, .shift])
+                .help(canRedo ? "redo: " + (k?.str("redoWhat") ?? "") + "   (\u{21E7}\u{2318}Z)" : "nothing to redo")
+            Text(canUndo ? "last change: " + (k?.str("undoWhat") ?? "") : "")
+                .font(.system(size: 11, design: .monospaced)).foregroundColor(Ink.dim).lineLimit(1)
+            Spacer()
+            Pill(title: n == 0 ? "DELETE" : "DELETE \(n) " + (n == 1 ? "ROW" : "ROWS"), look: n == 0 ? .ghost : .danger) {
+                s.verb(["a": "delete"])
+            }
+            .opacity(n == 0 ? 0.4 : 1).disabled(n == 0)
+            .help(n == 0 ? "tick rows in the last column first" : "delete the ticked rows (UNDO brings them back)")
+        }
+    }
+}
+
+/// The tick in a row's last column: tick, then DELETE above the table.
+struct SelectTick: View {
+    @ObservedObject var s: Server
+    let r: JSON
+    var body: some View {
+        Tick(on: r.bool("ticked"), tint: Ink.sand) { s.verb(["a": "tick", "id": r.int("id")]) }
+            .help("tick, then DELETE above the table")
+    }
+}
+
+/// The tick in the last column's head: every row, or none.
+struct SelectAll: View {
+    @ObservedObject var s: Server
+    var body: some View {
+        Tick(on: s.state.obj("keep")?.bool("allTicked") ?? false, tint: Ink.sand) { s.verb(["a": "tickall"]) }
+            .help("tick every row, or none")
+    }
+}
+
+/// FILTER: CC or NOTE, and the number. LEARN takes only the kind chosen here, so a knob turned by accident
+/// cannot be learned onto a row that waits for a note.
+struct FilterCell: View {
+    let kind: String          // "cc" or "note"
+    let number: String
+    var lit = false
+    let pickKind: (String) -> Void
+    let setNumber: (String) -> Void
+    var body: some View {
+        HStack(spacing: 4) {
+            Choice(options: [("cc", "CC"), ("note", "NOTE")], chosen: kind, width: 72, pick: pickKind)
+                .help("LEARN takes only this kind of message")
+            Field(value: number, width: 70, lit: lit, commit: setNumber)
+        }
+    }
+}
+
+/// The LEARN button's words while it waits: what the filter lets in.
+func learnWords(_ learning: Bool, _ kind: String) -> String {
+    learning ? (kind == "note" ? "press a note\u{2026}" : "turn a knob\u{2026}") : "LEARN"
 }
