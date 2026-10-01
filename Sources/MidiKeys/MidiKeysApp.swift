@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-let VERSION = "v6"
+let VERSION = "v7"
 
 @main
 struct MidiKeysApp: App {

@@ -17,3 +17,11 @@
 7. **v3, 1.10.2026: MIDI to MK Control is the master.** `KeepBar`, `SelectTick`, `SelectAll`, `FilterCell` and
    `learnWords` in Parts.swift are the table's shared parts; Key Stroke copies MK's column widths. `ticked` in
    /state is a list of numbers, not of objects: `list()` reads it as empty, count it as `[Any]`.
+
+## An empty tick took no click (1.10.2026)
+
+A Button whose label is a RoundedRectangle filled with Color.clear is hit-tested only where something is drawn: the
+1.5 px border. So an empty tick (the select tick above all, but also ON, INVERT, LED) could not be clicked in the
+middle, and DELETE never armed in the Swift windows while it did on the page. Measured: a click at the centre of row
+10's select tick left `ticked` empty; with `.contentShape(Rectangle())` the same click ticked it. Every custom
+button with a transparent face needs a contentShape.

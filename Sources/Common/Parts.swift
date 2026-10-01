@@ -76,6 +76,9 @@ struct Tick: View {
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(on ? tint : Ink.slateHi, lineWidth: 1.5))
                 .overlay(Text(on ? "\u{2713}" : "").font(.system(size: 12, weight: .bold)).foregroundColor(.black))
                 .frame(width: 22, height: 22).opacity(dead ? 0.25 : 1)
+                // AN EMPTY TICK IS CLEAR, AND SWIFTUI DOES NOT HIT-TEST CLEAR: only its thin border took a
+                // click, so a row could not be ticked for DELETE (Marko, 1.10.2026). The whole square is the button.
+                .contentShape(Rectangle())
         }.buttonStyle(.plain).disabled(dead)
     }
 }
@@ -395,6 +398,7 @@ struct LedSwatch: View {
                 .fill(has ? (hex.map { Color(hex: $0) } ?? Ink.slate) : Color.clear)
                 .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.25), lineWidth: 1))
                 .frame(width: 16, height: 16).opacity(has ? 1 : 0.2)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain).disabled(!has)
         .help(has ? "the colour of " + knob + ": click to change it in the scene" : (a?.str("says") ?? ""))
