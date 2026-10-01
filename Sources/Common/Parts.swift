@@ -418,3 +418,17 @@ struct LedSwatch: View {
         }
     }
 }
+
+/// THE ACTIVITY LED in front of every row (1.10.2026): green while the row fires, amber while his hand
+/// reaches it and nothing is sent; a knob glows a moment after each click, a note stays lit while it is down.
+struct ActLed: View {
+    @ObservedObject var s: Server
+    let r: JSON
+    var body: some View {
+        let how = s.lit[String(r.int("id"))]
+        let c: Color = how == "fire" ? Ink.green : (how == "heard" ? Ink.amber : Ink.slate)
+        Circle().fill(c).frame(width: 10, height: 10)
+            .shadow(color: how == nil ? .clear : c, radius: 4)
+            .help("lights while your hand moves this row on the controller: green = it fired, amber = heard, nothing sent")
+    }
+}

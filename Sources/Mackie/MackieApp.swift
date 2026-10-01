@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-let VERSION = "v5"
+let VERSION = "v6"
 
 @main
 struct MackieApp: App {
@@ -22,7 +22,7 @@ struct MackieApp: App {
                 MackieTable(s: s, cat: cat)
                 TraceBand(s: s)
             }
-            .frame(minWidth: 1040, minHeight: 640)
+            .frame(minWidth: 1060, minHeight: 640)
             .onAppear { cat.load(from: s) }
         }
         .windowStyle(.hiddenTitleBar)
@@ -93,6 +93,7 @@ struct MackieTable: View {
         Band(title: "THE TABLE") {
             KeepBar(s: s)
             HStack(spacing: 8) {
+                Color.clear.frame(width: 12, height: 1)     // over the activity LEDs
                 ForEach(Array(["FILTER", "VALUE", "MK COMMAND", "HOW", "INVERT", "ON", "LED", "LEARN", "TRY"].enumerated()), id: \.offset) { i, h in
                     Text(h).font(.system(size: 10, weight: .semibold, design: .monospaced))
                         .tracking(1).foregroundColor(Ink.dim).frame(width: MackieTable.w[i], alignment: .leading)
@@ -120,6 +121,7 @@ struct MackieRow: View {
         let w = MackieTable.w
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 8) {
+                ActLed(s: s, r: r).frame(width: 12)
                 FilterCell(kind: r.str("from"), number: r.str("number"), lit: learning,
                            pickKind: { s.verb(["a": "set", "id": id, "from": $0]) },
                            setNumber: { s.verb(["a": "set", "id": id, "number": $0]) })

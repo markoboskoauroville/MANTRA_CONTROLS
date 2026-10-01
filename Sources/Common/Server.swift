@@ -35,7 +35,11 @@ final class Server: ObservableObject {
     @Published private(set) var state: JSON = [:]
     @Published private(set) var up = false
     @Published private(set) var starting = false
+    /// THE ACTIVITY LEDS: row id -> "fire" (green) or "heard" (amber), from GET /lit (1.10.2026)
+    @Published private(set) var lit: [String: String] = [:]
     private var timer: Timer?
+    private var litTimer: Timer?
+    private var litAsking = false
 
     init(key: String, usualPort: Int) {
         self.key = key
@@ -61,6 +65,26 @@ final class Server: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refresh() }
         }
+        // AND THE ROWS' LIGHTS TWELVE TIMES A SECOND: a click of a knob lasts a third of a second, and
+        // the half-second look above would miss most of them. /lit is a few bytes.
+        litTimer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.refreshLit() }
+        }
+    }
+
+    func refreshLit() {
+        guard up, !litAsking else { return }
+        litAsking = true
+        var r = URLRequest(url: URL(string: base + "/lit")!)
+        r.timeoutInterval = 1
+        URLSession.shared.dataTask(with: r) { data, _, _ in
+            let j = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? JSON }
+            let l = (j?["lit"] as? [String: String]) ?? [:]
+            Task { @MainActor in
+                self.litAsking = false
+                if l != self.lit { self.lit = l }
+            }
+        }.resume()
     }
 
     func refresh() {
