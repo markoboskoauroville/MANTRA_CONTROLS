@@ -186,18 +186,60 @@ struct TraceBand: View {
 struct Header: View {
     @ObservedObject var s: Server
     let title: String
-    let sub: String
+    let version: String
     var body: some View {
         HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.system(size: 20, weight: .bold, design: .monospaced))
-                    .tracking(2).foregroundColor(Ink.sand)
-                Text(sub).font(Ink.mono).foregroundColor(Ink.dim)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(title).font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .tracking(2).foregroundColor(Ink.sand)
+                    Text(version).font(Ink.mono).foregroundColor(Ink.dim)
+                }
+                MidiMonitor(s: s)
             }
             Spacer()
             Pill(title: "WEB", look: .ghost) { s.openWeb() }.help("the same controls as a web page")
             if s.up { Power(on: s.state.bool("on")) { s.verb(["a": "power"]) } }
         }
+    }
+}
+
+/// THE INCOMING MIDI MONITOR, where the line under the title used to be. Marko, 1.10.2026: "Instead of
+/// that text, I want to see incoming MIDI messages ... it scans every MIDI port, and whatever it
+/// receives, it shows there"; "the same monitor everywhere." The ring and the wording live once, in
+/// ~/.local/lib/mantra/midiwatch.lua, and arrive here as /state's `incoming`; the web page draws the
+/// same four lines. Always four lines high, so nothing under it moves when MIDI starts or stops.
+struct MidiMonitor: View {
+    @ObservedObject var s: Server
+    var body: some View {
+        let items = s.state.list("incoming")
+        VStack(alignment: .leading, spacing: 2) {
+            if !s.up {
+                line("not running, so not listening", port: "", count: 1, ago: "", fresh: false)
+            } else if items.isEmpty {
+                let ports = s.state.strings("listening")
+                line("no MIDI yet \u{2014} listening on " + (ports.isEmpty ? "no port at all" : ports.joined(separator: ", ")),
+                     port: "", count: 1, ago: "", fresh: false)
+            } else {
+                ForEach(Array(items.prefix(4).enumerated()), id: \.offset) { i, m in
+                    line(m.str("text"), port: m.str("port"), count: m.int("count"), ago: m.str("ago"),
+                         fresh: i == 0 && m.str("ago") == "just now")
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(height: 4 * 17, alignment: .top)
+        .help("every MIDI message arriving on every port, newest first")
+    }
+    @ViewBuilder func line(_ text: String, port: String, count: Int, ago: String, fresh: Bool) -> some View {
+        HStack(spacing: 0) {
+            Circle().fill(fresh ? Ink.amber : Color.clear).frame(width: 7, height: 7).padding(.trailing, 7)
+            if !port.isEmpty { Text(port).frame(width: 150, alignment: .leading) }
+            Text(text).frame(minWidth: port.isEmpty ? 0 : 170, alignment: .leading)
+            if count > 1 { Text("\u{00D7}\(count)").foregroundColor(Ink.amber).padding(.trailing, 12) }
+            Text(ago)
+        }
+        .font(Ink.mono).foregroundColor(fresh ? Ink.sand : Ink.dim).lineLimit(1).frame(height: 15)
     }
 }
 
@@ -220,12 +262,12 @@ struct Controls<Content: View>: View {
     @ObservedObject var s: Server
     let name: String          // as it is written: "MIDI to Key Stroke", never title-cased into "Midi"
     let title: String
-    let sub: String
+    let version: String
     @ViewBuilder let content: Content
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Header(s: s, title: title, sub: sub)
+                Header(s: s, title: title, version: version)
                 if s.up { content } else { Down(s: s, name: name) }
             }.padding(20)
         }

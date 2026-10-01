@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-let VERSION = "v1"
+let VERSION = "v2"
 
 @main
 struct MidiKeysApp: App {
@@ -14,7 +14,7 @@ struct MidiKeysApp: App {
     var body: some Scene {
         WindowGroup("MIDI to Key Stroke") {
             Controls(s: s, name: "MIDI to Key Stroke", title: "MIDI TO KEY STROKE",
-                   sub: "a knob's CC or a key's note becomes a key stroke \u{2014} or the Mac's own volume \u{00B7} \(VERSION)") {
+                   version: VERSION) {
                 DeviceBand(s: s)
                 TableBand(s: s)
                 TraceBand(s: s)

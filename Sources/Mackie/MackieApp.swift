@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-let VERSION = "v1"
+let VERSION = "v2"
 
 @main
 struct MackieApp: App {
@@ -15,7 +15,7 @@ struct MackieApp: App {
     var body: some Scene {
         WindowGroup("MIDI to MK Control") {
             Controls(s: s, name: "MIDI to MK Control", title: "MIDI TO MK CONTROL",
-                     sub: "a knob becomes a Mackie Control command in Live \u{00B7} \(VERSION)") {
+                     version: VERSION) {
                 DeviceBand(s: s)
                 ToLiveBand(s: s)
                 BlobBand(s: s)

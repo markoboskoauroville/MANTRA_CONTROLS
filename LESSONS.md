@@ -11,3 +11,6 @@
    already on, it stops it. `STAR.isOnKey` exists so the window can check first.
 5. **`hs` reads stdin when it is not a terminal** (MIDI_TO_KEYSTROKE, same day): every `Process` that
    runs it gets `standardInput = FileHandle.nullDevice`.
+6. **The line under the title is the incoming MIDI monitor** (v2, 1.10.2026): `MidiMonitor` in Parts.swift draws
+   /state's `incoming`, always four lines high; the version sits beside the title. The ring and the words are in
+   ~/.local/lib/mantra/midiwatch.lua, so the window and the page can never word a message differently.
