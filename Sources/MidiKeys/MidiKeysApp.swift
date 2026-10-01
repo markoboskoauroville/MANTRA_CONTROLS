@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-let VERSION = "v3"
+let VERSION = "v4"
 
 @main
 struct MidiKeysApp: App {
@@ -29,17 +29,17 @@ struct MidiKeysApp: App {
 struct TableBand: View {
     @ObservedObject var s: Server
     // the columns, the same widths in the head and in every row
-    static let w: [CGFloat] = [150, 70, 250, 170, 34, 130, 30]   // FILTER, VALUE, LEARN and the tick as wide as the master's
+    static let w: [CGFloat] = [150, 70, 250, 170, 34, 34, 130, 30]   // FILTER, VALUE, LEARN and the tick as wide as the master's
     var body: some View {
         let st = s.state
         Band(title: "THE TABLE") {
             KeepBar(s: s)
             HStack(spacing: 8) {
-                ForEach(Array(["FILTER", "VALUE", "KEY", "WHAT IT IS", "ON", "LEARN"].enumerated()), id: \.offset) { i, h in
+                ForEach(Array(["FILTER", "VALUE", "KEY", "WHAT IT IS", "ON", "LED", "LEARN"].enumerated()), id: \.offset) { i, h in
                     Text(h).font(.system(size: 10, weight: .semibold, design: .monospaced))
                         .tracking(1).foregroundColor(Ink.dim).frame(width: TableBand.w[i], alignment: .leading)
                 }
-                SelectAll(s: s).frame(width: TableBand.w[6])
+                SelectAll(s: s).frame(width: TableBand.w[7])
             }
             let rows = st.list("rows")
             if rows.isEmpty {
@@ -88,10 +88,11 @@ struct RowView: View {
                     Pill(title: "VOLUME", look: r.str("kind") == "volume" ? .lit : .ghost) { s.verb(["a": "set", "id": id, "kind": "volume"]) }
                 }.frame(width: w[3], alignment: .leading)
                 Tick(on: r.bool("on")) { s.verb(["a": "set", "id": id, "on": !r.bool("on")]) }.frame(width: w[4])
-                Pill(title: learnWords(learning, r.str("type")), look: learning ? .lit : .ghost, width: w[5]) {
+                LedTick(s: s, r: r).frame(width: w[5])
+                Pill(title: learnWords(learning, r.str("type")), look: learning ? .lit : .ghost, width: w[6]) {
                     s.verb(["a": "learn", "id": id])
                 }
-                SelectTick(s: s, r: r).frame(width: w[6])
+                SelectTick(s: s, r: r).frame(width: w[7])
             }
             if r.bool("clash") {
                 Text("another row answers the same MIDI and value \u{2014} both keys are pressed").font(Ink.mono).foregroundColor(Ink.red)
@@ -99,6 +100,7 @@ struct RowView: View {
             if !r.str("hint").isEmpty && r.str("hint") != "<null>" {
                 Text(r.str("hint")).font(Ink.mono).foregroundColor(Ink.dim)
             }
+            LedLine(r: r)
         }
     }
 }

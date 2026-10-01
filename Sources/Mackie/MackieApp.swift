@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-let VERSION = "v3"
+let VERSION = "v4"
 
 @main
 struct MackieApp: App {
@@ -88,16 +88,16 @@ struct BlobBand: View {
 struct MackieTable: View {
     @ObservedObject var s: Server
     @ObservedObject var cat: Catalogue
-    static let w: [CGFloat] = [150, 70, 250, 130, 50, 34, 130, 50, 30]   // the master's columns: Key Stroke copies them
+    static let w: [CGFloat] = [150, 70, 250, 130, 50, 34, 34, 130, 50, 30]   // the master's columns: Key Stroke copies them
     var body: some View {
         Band(title: "THE TABLE") {
             KeepBar(s: s)
             HStack(spacing: 8) {
-                ForEach(Array(["FILTER", "VALUE", "MK COMMAND", "HOW", "INVERT", "ON", "LEARN", "TRY"].enumerated()), id: \.offset) { i, h in
+                ForEach(Array(["FILTER", "VALUE", "MK COMMAND", "HOW", "INVERT", "ON", "LED", "LEARN", "TRY"].enumerated()), id: \.offset) { i, h in
                     Text(h).font(.system(size: 10, weight: .semibold, design: .monospaced))
                         .tracking(1).foregroundColor(Ink.dim).frame(width: MackieTable.w[i], alignment: .leading)
                 }
-                SelectAll(s: s).frame(width: MackieTable.w[8])
+                SelectAll(s: s).frame(width: MackieTable.w[9])
             }
             let rows = s.state.list("rows")
             if rows.isEmpty {
@@ -143,14 +143,16 @@ struct MackieRow: View {
                 Tick(on: r.bool("invert"), dead: !r.bool("relative")) { s.verb(["a": "set", "id": id, "invert": !r.bool("invert")]) }
                     .frame(width: w[4]).help(r.bool("relative") ? "the knob turns the other way" : "this command has no direction to turn round")
                 Tick(on: r.bool("on")) { s.verb(["a": "set", "id": id, "on": !r.bool("on")]) }.frame(width: w[5])
-                Pill(title: learnWords(learning, r.str("from")), look: learning ? .lit : .ghost, width: w[6]) { s.verb(["a": "learn", "id": id]) }
-                Pill(title: "TRY", look: .ghost, width: w[7]) { s.verb(["a": "try", "id": id]) }.help("send this command once, now")
-                SelectTick(s: s, r: r).frame(width: w[8])
+                LedTick(s: s, r: r).frame(width: w[6])
+                Pill(title: learnWords(learning, r.str("from")), look: learning ? .lit : .ghost, width: w[7]) { s.verb(["a": "learn", "id": id]) }
+                Pill(title: "TRY", look: .ghost, width: w[8]) { s.verb(["a": "try", "id": id]) }.help("send this command once, now")
+                SelectTick(s: s, r: r).frame(width: w[9])
             }
             if r.bool("clash") {
                 Text("another row answers the same message \u{2014} both are sent").font(Ink.mono).foregroundColor(Ink.red)
             }
             Text(r.str("says")).font(Ink.mono).foregroundColor(Ink.dim).fixedSize(horizontal: false, vertical: true)
+            LedLine(r: r)
         }
     }
 }

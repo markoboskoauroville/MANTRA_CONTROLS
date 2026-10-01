@@ -352,3 +352,29 @@ struct FilterCell: View {
 func learnWords(_ learning: Bool, _ kind: String) -> String {
     learning ? (kind == "note" ? "press a note\u{2026}" : "turn a knob\u{2026}") : "LEARN"
 }
+
+/// THE LED TICK: the E16 knob behind the row lights from here (e16led.lua). Drawn in the knob's own scene
+/// colour; dead, with the reason in its help, when there is nothing to light.
+struct LedTick: View {
+    @ObservedObject var s: Server
+    let r: JSON
+    var body: some View {
+        let a = r.obj("ledAbout")
+        let can = a?.bool("can") ?? false
+        let hex = UInt32((a?.str("colour") ?? "").replacingOccurrences(of: "#", with: ""), radix: 16)
+        Tick(on: r.bool("led") && can, dead: !can, tint: hex.map { Color(hex: $0) } ?? Ink.amber) {
+            s.verb(["a": "set", "id": r.int("id"), "led": !r.bool("led")])
+        }
+        .help(a?.str("says") ?? "")
+    }
+}
+
+/// The line under a row whose LED is ticked: which knob, and what it will do.
+struct LedLine: View {
+    let r: JSON
+    var body: some View {
+        if r.bool("led"), let a = r.obj("ledAbout") {
+            Text("LED: " + a.str("says")).font(Ink.mono).foregroundColor(Ink.dim).fixedSize(horizontal: false, vertical: true)
+        }
+    }
+}
