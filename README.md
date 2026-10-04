@@ -29,15 +29,19 @@ The window looks again twice a second, as the page does.
 
 ## Building
 
-    sh build.sh              both apps, into apps/ (not in git)
-    sh build.sh midikeys     one
+```sh
+sh build.sh              both apps, into apps/ (not in git)
+sh build.sh midikeys     one
+```
 
 swiftc straight, no Xcode project, macOS 14 or later, Apple Silicon.
 
-    Sources/Common/Server.swift   the wire: /state, /do, the port, START
-    Sources/Common/Parts.swift    the look (the pages' own colours) and the shared bands
-    Sources/MidiKeys/             MIDI to Key Stroke
-    Sources/Mackie/               MIDI to MK Control
+```
+Sources/Common/Server.swift   the wire: /state, /do, the port, START
+Sources/Common/Parts.swift    the look (the pages' own colours) and the shared bands
+Sources/MidiKeys/             MIDI to Key Stroke
+Sources/Mackie/               MIDI to MK Control
+```
 
 ## Adding the next app
 
