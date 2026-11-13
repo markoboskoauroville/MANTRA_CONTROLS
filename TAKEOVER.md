@@ -71,3 +71,7 @@ Sources/Mackie/               MIDI to MK Control
 Every star app with a page answers `/state` and `/do` the same way. Read its `page.lua` for the
 bands and verbs, write `Sources/<App>/<App>App.swift` from the shared parts, add a line to `build.sh`,
 and give its star file `M.native = ".../apps/<Name>.app"` — the Launcher shows APP from then on.
+
+## State at close, 13.11.2026
+
+v8 (13.11.2026): the windows start MIDI Tools (Mantra) instead of asking Hammerspoon; GitHub workflow; public repo without README.

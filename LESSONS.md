@@ -25,3 +25,7 @@ A Button whose label is a RoundedRectangle filled with Color.clear is hit-tested
 middle, and DELETE never armed in the Swift windows while it did on the page. Measured: a click at the centre of row
 10's select tick left `ticked` empty; with `.contentShape(Rectangle())` the same click ticked it. Every custom
 button with a transparent face needs a contentShape.
+
+## 13.11.2026
+
+- 13.11.2026: companions are started by launching the app, never by a call into a removed engine.
