@@ -4,7 +4,7 @@
 // now, leave the experimental feature so it can be web or Swift, two ways to launch the controller app."
 //
 // THE SWIFT APP IS A SECOND FACE ON THE SAME SERVER, NOT A SECOND APP. The MIDI logic lives in
-// Hammerspoon (midikeys.lua, mackie.lua) and already answers two questions over HTTP on 127.0.0.1:
+// the MIDI engine and already answers two questions over HTTP on 127.0.0.1:
 //
 //     GET  /state   everything the page draws, as JSON
 //     POST /do      one verb, {"a": "power"} and so on; the answer is the new state
@@ -119,17 +119,12 @@ final class Server: ObservableObject {
         }.resume()
     }
 
-    /// WHEN THE APP IS OFF, THE WINDOW CAN SWITCH IT ON: the same tick as the star's row, through
-    /// Hammerspoon, because the app lives there. Nothing starts by itself - this is a button he presses.
+    /// WHEN THE APP IS OFF, THE WINDOW CAN SWITCH IT ON. Since 13.11.2026 there is no Hammerspoon to ask: both engines
+    /// are the Swift app MIDI Tools (Mantra), opened in the background (`open -g`). Nothing starts by itself - a button he presses.
     func startInStar() {
         starting = true
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/opt/homebrew/bin/hs")
-        p.arguments = ["-t", "20", "-c", "if not STAR.isOnKey or not STAR.isOnKey(\"\(key)\") then STAR.toggleKey(\"\(key)\") end; return \"ok\""]
-        p.standardInput = FileHandle.nullDevice      // hs reads stdin when it is not a terminal
-        p.standardOutput = FileHandle.nullDevice
-        p.standardError = FileHandle.nullDevice
-        try? p.run()
+        let c = NSWorkspace.OpenConfiguration(); c.activates = false
+        NSWorkspace.shared.openApplication(at: URL(fileURLWithPath: "/Applications/MIDI Tools (Mantra).app"), configuration: c) { _, _ in }
         DispatchQueue.main.asyncAfter(deadline: .now() + 12) { [weak self] in self?.starting = false }
     }
 

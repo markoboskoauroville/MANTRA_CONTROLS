@@ -11,3 +11,9 @@ Logger, Ableton Assistant A1, Voice cloning, Find a file, Star Monitor, Spotligh
 
 **Where things are:** the star's side is in MANTRA_STAR (`star.lua`: `isOnKey`, `openNativeKey`, `native`
 in `STAR.list()`; `apps/*.lua`: `M.native`). The Launcher's APP button is in STAR_LAUNCHER `Panel.swift`.
+
+## 13.11.2026: no Hammerspoon
+
+> "Let me know why this Hammer Spoon is still running when I'm converting everything to Swift. If something is not converted, please create agents to convert anything that is still on Hammer Spoon to Swift right now." (Marko, 13.11.2026)
+
+v8: the ON button of the two windows (`startInStar`) opens MIDI Tools (Mantra).app with `open -g` instead of asking Hammerspoon (`hs -c STAR.toggleKey`). Built by GitHub (.github/workflows/build.yml, both apps, release Latest). These windows are the old faces of the Lua engines; MIDI Tools (Mantra) replaces them.

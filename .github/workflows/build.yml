@@ -1,0 +1,24 @@
+# Adapted from MANTRA_MANIFEST/workflows/mac-swift.yml: this repo builds TWO apps (build.sh makes both, apps/*.app).
+name: build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: sh build.sh
+      - name: Pack
+        run: cd apps && for a in *.app; do ditto -c -k --keepParent "$a" "${a%.app}.zip"; done
+      - name: Release (Latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(grep -m1 'let VERSION' Sources/MidiKeys/MidiKeysApp.swift | sed 's/.*"\(v[0-9]*\)".*/\1/')
+          if gh release view "$V" >/dev/null 2>&1; then gh release upload "$V" apps/*.zip --clobber
+          else gh release create "$V" apps/*.zip --target "$GITHUB_SHA" --latest --title "MANTRA_CONTROLS $V" --notes "$(git log -1 --format=%s)"; fi

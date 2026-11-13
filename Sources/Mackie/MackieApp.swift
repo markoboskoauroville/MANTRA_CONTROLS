@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-let VERSION = "v7"
+let VERSION = "v8"
 
 @main
 struct MackieApp: App {
